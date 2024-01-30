@@ -566,7 +566,7 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 
 /************************************************************/
 
-#include "/Users/ochafik/Documents/GitHub/manifold/bindings/python_cffi/api.h"
+#include "api.h"
 
 /************************************************************/
 

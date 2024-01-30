@@ -5,62 +5,54 @@
 """
 
 try:
+    # Try natively compiled extension first (lib)
     from manifold3d_cffi.cffi import ffi as ffi, lib as lib
 except ImportError as e:
-    raise ImportError(f"Couldn't find manifold bindings ({e}). Run `python regenerate.py` or check your PYTHONPATH.")
+    # Try serialized signature extension and load lib manually
+    try:
+        from manifold3d_cffi.cffi import ffi as ffi
+    except ImportError as e:
+        raise ImportError(f"Couldn't find manifold bindings ({e}). Run `python regenerate.py` or check your PYTHONPATH.")
 
-# import os, platform
+    import os, platform
 
-# __exact_library = os.environ.get("MANIFOLD_LIBRARY")
-# if __exact_library:
-#     __candidates = [__exact_library]
-# elif platform.system() == "Windows":
-#     __candidates = ["manifold.dll"]
-# else:
-#     __candidates = ["libmanifold.so", "libmanifold.so"]
-#     if platform.system() == "Darwin":
-#         __candidates += ["libmanifold.dylib"]
+    __exact_library = os.environ.get("MANIFOLD_LIBRARY")
+    if __exact_library:
+        __candidates = [__exact_library]
+    elif platform.system() == "Windows":
+        __candidates = ["manifold.dll"]
+    else:
+        __candidates = ["libmanifold.so", "libmanifold.so"]
+        if platform.system() == "Darwin":
+            __candidates += ["libmanifold.dylib"]
 
-# for i, name in enumerate(__candidates):
-#     try:
-#         # This is where all the functions, enums and constants are defined
-#         lib = ffi.dlopen(name)
-#     except OSError:
-#         if i < len(__candidates) - 1:
-#             continue
-#         raise OSError(f"Couldn't find manifold's shared library (tried names: {__candidates}). Add its directory to DYLD_LIBRARY_PATH (on Mac) or LD_LIBRARY_PATH, or define MANIFOLD_LIBRARY.")
+    for i, name in enumerate(__candidates):
+        try:
+            # This is where all the functions, enums and constants are defined
+            lib = ffi.dlopen(name)
+        except OSError:
+            if i < len(__candidates) - 1:
+                continue
+            raise OSError(f"Couldn't find manifold's shared library (tried names: {__candidates}). Add its directory to DYLD_LIBRARY_PATH (on Mac) or LD_LIBRARY_PATH, or define MANIFOLD_LIBRARY.")
 
-# This contains the cffi helpers such as new, cast, string, etc.
-# https://cffi.readthedocs.io/en/latest/ref.html#ffi-interface
-ffi = ffi
+    # This contains the cffi helpers such as new, cast, string, etc.
+    # https://cffi.readthedocs.io/en/latest/ref.html#ffi-interface
+    ffi = ffi
 
 from typing import Callable, Optional, Tuple
 import numpy as np
 
-# c_lib = ffi.dlopen(None)
-# print(c_lib)
-# print([n for n in dir(lib) if 'malloc' in n])
-# print(dir(lib))
-# # malloc = c_lib.malloc
-# malloc = ffi.def_extern("malloc")
-# print(f'malloc = {malloc}')
-# # from _cffi_backend import load_library
-
 def _new_meshgl_ptr(f: Callable[[ffi.CData], ffi.CData]):
   return ffi.gc(f(lib.malloc(lib.manifold_meshgl_size())), lib.manifold_delete_meshgl)
-  # return ffi.gc(f(ffi.new("char[]", lib.manifold_meshgl_size())), lib.manifold_delete_meshgl)
 
 def _new_manifold_ptr(f: Callable[[ffi.CData], ffi.CData]):
   return ffi.gc(f(lib.malloc(lib.manifold_manifold_size())), lib.manifold_delete_manifold)
-  # return ffi.gc(f(ffi.new("char[]", lib.manifold_manifold_size())), lib.manifold_delete_manifold)
 
 class Mesh:
   def __init__(self, vert_properties: Optional[np.ndarray] = None, tri_verts: Optional[np.ndarray] = None, *, mem: Optional[ffi.CData] = None):
     if mem is not None:
       assert vert_properties is None and tri_verts is None
       self.mem = mem
-      # self._tri_verts = None
-      # self._vert_properties = None
     else:
       assert vert_properties is not None and tri_verts is not None
       vert_properties_shape=vert_properties.shape
@@ -70,8 +62,6 @@ class Mesh:
 
       tri_verts = tri_verts.ascontiguousarray()
       vert_properties = vert_properties.ascontiguousarray()
-      # self._tri_verts = tri_verts
-      # self._vert_properties = vert_properties
 
       n_tris=tri_verts_shape[0]
       n_verts=vert_properties_shape[0]

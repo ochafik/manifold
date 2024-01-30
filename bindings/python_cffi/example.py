@@ -5,6 +5,12 @@
 # python regenerate.py && python example.py
 # hyperfine --warmup=1  -L ffi CFFI,NANOBIND "FFI={ffi} python example.py"
 #
+# ( export PATH=/Users/ochafik/bin/pypy3.10-v7.3.15-macos_arm64/bin:$PATH ; ( cd ../../ && pip install . && pip install pycparser numpy ) && python regenerate.py )
+# ( export PATH=/Users/ochafik/bin/pypy3.10-v7.3.15-macos_arm64/bin:$PATH ; python regenerate.py )
+# ( export PATH=/Users/ochafik/bin/pypy3.10-v7.3.15-macos_arm64/bin:$PATH ; hyperfine --warmup=1  -L ffi CFFI,NANOBIND "FFI={ffi} python example.py" )
+#
+# ( export PATH=/Users/ochafik/bin/pypy3.10-v7.3.15-macos_arm64/bin:$PATH ; MANIFOLD_LIBRARY=../../build/bindings/c/libmanifoldc.dylib hyperfine --warmup=1  -L ffi CFFI,NANOBIND "FFI={ffi} python example.py" )
+#
 # MANIFOLD_LIBRARY=../../build/bindings/c/libmanifoldc.dylib python example.py
 # hyperfine --warmup=1  -L ffi CFFI,NANOBIND "FFI={ffi} MANIFOLD_LIBRARY=../../build/bindings/c/libmanifoldc.dylib python example.py"
 
@@ -18,8 +24,8 @@ elif _ffi == 'CFFI':
 else:
   raise Exception(f'Invalid FFI: {_ffi}')
 
-objs = [Manifold.sphere(i, 100).translate((i, 0, 0)) for i in range(100)]
-# objs = [Manifold.cube((i, 1, 1)).translate((i, 0, 0)) for i in range(1000)]
+# objs = [Manifold.sphere(i, 100).translate((i, 0, 0)) for i in range(100)]
+objs = [Manifold.cube((i, 1, 1)).translate((i, 0, 0)) for i in range(1000)]
 out = sum(objs, Manifold())
 
 # a = Manifold.sphere(1, 10)
