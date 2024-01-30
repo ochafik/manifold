@@ -374,7 +374,7 @@ size_t manifold_manifold_pair_size();
 size_t manifold_meshgl_size();
 size_t manifold_box_size();
 size_t manifold_rect_size();
-size_t manifold_curvature_size();
+// size_t manifold_curvature_size();
 
 // destruction
 
